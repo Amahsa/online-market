@@ -3,6 +3,7 @@ from market import Market
 from All_Users_File_Handler import UsersFileHandler
 import sys
 import hashlib
+import re
 
 logging.basicConfig(level=logging.DEBUG, filename='Log.log', filemode='a',
                     format='%(asctime)s - %(process)d - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
@@ -13,16 +14,24 @@ def password_hashing(password):
     return hashed_password.hexdigest()
 
 
+def validation_phone_number(phone_number):
+    regex = '^(\s)*09\d{9}$'
+    if re.search(regex, phone_number):
+        return True
+
+
 def user_not_taken(username):
     all_users_file = UsersFileHandler()
     all_users = all_users_file.read_file()
     found = False
-    for item in all_users:
-        if item['username'] == username:
-            found = True
-            break
-    if not found:
-        return True
+    if all_users:
+        for item in all_users:
+            if item['username'] == username:
+                found = True
+                return False
+        if not found:
+            return True
+    return True
 
 
 def user_info(username):
@@ -71,7 +80,11 @@ def register():
     print(' ' * 20 + '3. Exit')
     item = input('Chose an item: ')
     if item == '1':
-        username = input('Phone number (this will e your username): ')
+        phone_number = input('Phone number (this will be use as your username): ')
+        while not validation_phone_number(phone_number):
+            print('Enter valid phone number!')
+            phone_number = input('Phone number (this will be use as your username): ')
+        username = phone_number
         if user_not_taken(username):
             password = input('Password : ')
             temp = input('Repeat password : ')
@@ -100,6 +113,7 @@ def register():
     else:
         sys.exit()
 
+print('RRRRRRRRRRRRRRRRR')
 
 def sign_in():
     username = input('Username : ')
@@ -109,7 +123,7 @@ def sign_in():
         if user['password'] == password_hashing(password):
             if user['type'] == 'Customer':
                 logging.info(f"A costumer by username:{user['username']} signed in")
-                custemer_menu(user['username'])
+                customer_menu(user['username'])
             elif user['type'] == 'Manager':
                 try:
                     Market.inventory_alert(username)
@@ -127,7 +141,7 @@ def sign_in():
 
 
 def market_manager_menu(username):
-    print(' Manager Menu '.center(50,U"\u2500"))
+    print(' Manager Menu '.center(50, U"\u2500"))
     print(' ' * 20 + '1. Register product list')
     print(' ' * 20 + '2. Product inventory')
     print(' ' * 20 + '3. Unavailable products')
@@ -135,7 +149,8 @@ def market_manager_menu(username):
     print(' ' * 20 + '5. Invoice search')
     print(' ' * 20 + '6. Show all costumers')
     print(' ' * 20 + '7. Block a costumer')
-    print(' ' * 20 + '8. Exit')
+    print(' ' * 20 + '8. Back to main menu')
+    print(' ' * 20 + '9. Exit')
     print(U"\u2500" * 50)
     item = input('Chose an item: ')
     if item == '1':
@@ -156,11 +171,13 @@ def market_manager_menu(username):
             costumer = input('Which costumer do you want to block? (Enter Username)')
             Market.block_customer(username, costumer)
     elif item == '8':
+        main_menu()
+    elif item == '9':
         sys.exit()
     market_manager_menu(username)
 
 
-def custemer_menu(username):
+def customer_menu(username):
     print('1. ')
 
 

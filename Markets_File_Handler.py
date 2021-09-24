@@ -2,6 +2,7 @@ import csv
 from csv import DictWriter
 import os
 import logging
+from prettytable import from_csv
 
 
 class FileHandler:
@@ -34,6 +35,16 @@ class FileHandler:
     def clear(self):
         f = open(self.file_path, "w+")
         f.close()
+
+    def update(self, new_values):
+        f = open(self.file_path, "w+")
+        f.close()
+        FileHandler.add_to_file(self, new_values)
+
+    def show_table(self):
+        with open(self.file_path) as f:
+            my_table = from_csv(f)
+        print(my_table)
 
 
 class MarketsFileHandler(FileHandler):
@@ -74,6 +85,11 @@ class MarketInvoicesFileHandler(FileHandler):
             os.mkdir(storage_path)
         self.file_path = 'Markets' + '/' + file_path + '/' + 'invoices.txt'
         super().__init__(self.file_path)
+
+    def show_tale(self):
+        with open(self.file_path) as f:
+            my_table = from_csv(f)
+        print(my_table)
 
 
 class MarketBlockCostumersFileHandler(FileHandler):
