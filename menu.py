@@ -4,6 +4,7 @@ from All_Users_File_Handler import UsersFileHandler
 import sys
 import hashlib
 import re
+from datetime import time
 
 logging.basicConfig(level=logging.DEBUG, filename='Log.log', filemode='a',
                     format='%(asctime)s - %(process)d - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
@@ -19,7 +20,15 @@ def validation_phone_number(phone_number):
     if re.search(regex, phone_number):
         return True
 
+def validation_password(password):
+    regex = '[\w\d]{6}[\w\d]*'
+    if re.search(regex, password):
+        return True
 
+def validation_time(time_):
+    regex = '^\d{2}:\d{2}:\d{2}\s*$'
+    if re.search(regex, time_):
+        return True
 def user_not_taken(username):
     all_users_file = UsersFileHandler()
     all_users = all_users_file.read_file()
@@ -43,20 +52,19 @@ def user_info(username):
 
 def add_product(username):
     # print('market, product_name, brand, product_count, product_price, barcode, expiration_date')
-    item = 'y'
-    while item == 'y':
+    continue_ = 'y'
+    while continue_ == 'y':
         product_name = input('product name : ')
         brand = input('brand : ')
         product_count = input('count : ')
         product_price = input('price : ')
         barcode = input('barcode : ')
         expiration_date = input('expiration date (dd-mm-yyyy): ')
-
         Market.register_product_list(username=username, product_name=product_name, brand=brand,
                                      product_count=product_count, product_price=product_price, barcode=barcode,
                                      expiration_date=expiration_date)
         logging.info(f"A market manager by username:{username} added a product")
-        item = input('continue to add product (y/n)? ').lower()
+        continue_ = input('continue to add product (y/n)? ').lower()
 
 
 def main_menu():
@@ -74,18 +82,15 @@ def main_menu():
         sys.exit()
 
 
-def register():
-    print(' ' * 20 + '1. Market manager')
-    print(' ' * 20 + '2. Customer')
-    print(' ' * 20 + '3. Exit')
-    item = input('Chose an item: ')
-    if item == '1':
+def register_manager():
+    market_name,start_working , end_working, password ='','1','0','0'
+    phone_number = input('Phone number (this will be use as your username): ')
+    while not validation_phone_number(phone_number):
+        print('Enter valid phone number!')
         phone_number = input('Phone number (this will be use as your username): ')
-        while not validation_phone_number(phone_number):
-            print('Enter valid phone number!')
-            phone_number = input('Phone number (this will be use as your username): ')
-        username = phone_number
-        if user_not_taken(username):
+    username = phone_number
+    if user_not_taken(username):
+        while not validation_password(password):
             password = input('Password : ')
             temp = input('Repeat password : ')
             if temp != password:
@@ -93,27 +98,43 @@ def register():
                 while temp != password:
                     password = input('password : ')
                     temp = input('Repeat password : ')
+        while not market_name:
             market_name = input('Market name : ')
-            start_working = input('Opening time (Use 24-hour format): ')
-            end_working = input('Closing time (Use 24-hour format): ')
-            if float(end_working) <= float(start_working):
-                print('Closing time most be grater than opening time ')
-                while float(end_working) <= float(start_working):
-                    start_working = input('Opening time (Use 24-hour format): ')
-                    end_working = input('Closing time (Use 24-hour format): ')
-            Market(username, password_hashing(password), market_name, start_working, end_working)
-            logging.info(f"A manager by username:{username} is signed up")
-        else:
-            print('This username is taken by someone else!')
-            logging.info(f"Try to re-register by username:{username}")
-        main_menu()
+        while not start_working or not end_working or end_working < start_working:
+            while not validation_time(str(start_working)):
+                start_working = input('Opening time (Use 24-hour format hh:mm:ss ): ')
+            start_working = list(map(int,start_working.split(':')))
+            start_working = time(start_working[0], start_working[1], start_working[2])
+            while not validation_time(str(end_working)):
+                end_working = input('Closing time (Use 24-hour format hh:mm:ss): ')
+            end_working = list(map(int,end_working.split(':')))
+            end_working = time(end_working[0], end_working[1], end_working[2])
+            # if end_working < start_working:
+            #     while end_working <= start_working:
+            #         print('Enter valid time ')
+            #         start_working = input('Opening time (Use 24-hour format): ')
+            #         end_working = input('Closing time (Use 24-hour format): ')
+        Market(username, password_hashing(password), market_name, start_working, end_working)
+        logging.info(f"A manager by username:{username} is signed up")
+    else:
+        print('You registered by this phone number since before!')
+        logging.info(f"Try to re-register by username:{username}")
 
+
+def register():
+    print(' ' * 20 + '1. Market manager')
+    print(' ' * 20 + '2. Customer')
+    print(' ' * 20 + '3. Exit')
+    item = input('Chose an item: ')
+    if item == '1':
+        register_manager()
+        main_menu()
     if item == '2':
         pass
     else:
         sys.exit()
 
-print('RRRRRRRRRRRRRRRRR')
+
 
 def sign_in():
     username = input('Username : ')
@@ -155,26 +176,36 @@ def market_manager_menu(username):
     item = input('Chose an item: ')
     if item == '1':
         add_product(username)
+        market_manager_menu(username)
     elif item == '2':
         Market.inventory(username)
+        market_manager_menu(username)
     elif item == '3':
         Market.inventory_alert(username)
+        market_manager_menu(username)
     elif item == '4':
         Market.customer_purchase_invoices(username)
+        market_manager_menu(username)
     elif item == '5':
-        Market.invoice_search(username)
+        customer_phone = input('Enter customer phone number or press Enter')
+        date = input('Enter date or press Enter')
+        until_date = input('Enter date or press Enter')
+        Market.invoice_search(username,customer_phone,date,until_date)
+        market_manager_menu(username)
     elif item == '6':
-        Market.customer_list(username)
+        Market.show_customers_info(username)
+        market_manager_menu(username)
     elif item == '7':
         customer_exist = Market.customer_list(username)
         if customer_exist:
             costumer = input('Which costumer do you want to block? (Enter Username)')
             Market.block_customer(username, costumer)
+        market_manager_menu(username)
     elif item == '8':
         main_menu()
     elif item == '9':
         sys.exit()
-    market_manager_menu(username)
+
 
 
 def customer_menu(username):
