@@ -108,8 +108,11 @@ def show_invoice(list_dict):
         logging.warning('Try to open a not existed file')
 
 
-def find_costumer(costumer, path):
-    pass
+def not_block(costumer, list_dict):
+    for item in list_dict:
+        if item['username'] == costumer and item['status'] == 'active':
+            return True
+
 
 
 class Market:
@@ -280,17 +283,33 @@ class Market:
         else:
             print('There is No Costumer')
             logging.info('Try to read not exist file (costumers.txt)')
+    # @staticmethod
+    # def update(object,**kwargs1,**kwargs2 ):
+    #     list_dict = object.read_file()
+    #     found = True
+    #     for item in list_dict:
+    #         for key, value in kwargs1.items():
+    #             if item[key] != value:
+    #                 found = False
+    #                 break
+    #         if found:
+    #             for key, value in kwargs1.items():
+    #                 item[key] = kwargs2[key]
+    #             break
+
 
     @staticmethod
-    def block_customer(username, costumer):
-        block_costumers = MarketBlockCostumersFileHandler(username)
-        path = block_costumers.file_path
-        if not find_costumer(costumer, path):
+    def block_customer(market, costumer):
+        block_costumers_file = MarketBlockCostumersFileHandler(market)
+        all_costumers_file=MarketsCostumersFileHandler(market)
+        list_dict = block_costumers_file.read_file()
+        if not_block(costumer, all_costumers_file.read_file()):
             temp_dict = {}
-            temp_dict['costumer_username'] = costumer
-            block_costumers.add_to_file(temp_dict)
+            temp_dict['costumer'] = costumer
+            block_costumers_file.add_to_file(temp_dict)
+            # update(block_costumers,'costomer',costumer,'status','block')
         else:
-            print('This costumer is locked since before!')
+            print('This costumer is blocked since before!')
 
     def save(self):
         user = UsersFileHandler()
@@ -308,7 +327,7 @@ class Market:
                 return item
 
     @staticmethod
-    def find_product_by_Barcode(market_username, barcode):
+    def find_product_by_barcode(market_username, barcode):
         products_file_handler = MarketsProductsFileHandler(market_username)
         products_list = products_file_handler.read_file()
         for item in products_list:

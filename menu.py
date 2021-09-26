@@ -155,23 +155,26 @@ def sign_in():
         else:
             print('Incorrect password ')
             logging.warning(f"A user by username:{user['username']} entered incorrect password")
+            sign_in()
     else:
         print('No user found! please sign up or check the username')
         logging.warning(f"Try to sign in with unavailable  username:{username}")
-    main_menu()
+        main_menu()
 
 
 def market_manager_menu(username):
+    print(U"\u2500" * 50)
     print(' Manager Menu '.center(50, U"\u2500"))
     print(' ' * 20 + '1. Register product list')
-    print(' ' * 20 + '2. Product inventory')
-    print(' ' * 20 + '3. Unavailable products')
-    print(' ' * 20 + '4. Customers purchase invoices')
+    print(' ' * 20 + '2. View list of Products')
+    print(' ' * 20 + '3. Check unavailable products')
+    print(' ' * 20 + '4. View All invoices')
     print(' ' * 20 + '5. Invoice search')
-    print(' ' * 20 + '6. Show all costumers')
-    print(' ' * 20 + '7. Block a costumer')
-    print(' ' * 20 + '8. Back to main menu')
-    print(' ' * 20 + '9. Exit')
+    print(' ' * 20 + '6. View all costumers and their invoices')
+    print(' ' * 20 + '7. View list of all costumers')
+    print(' ' * 20 + '8. Block a costumer')
+    print(' ' * 20 + '9. Back to main menu')
+    print(' ' * 20 + '10. Exit')
     print(U"\u2500" * 50)
     item = input('Chose an item: ')
     if item == '1':
@@ -196,14 +199,19 @@ def market_manager_menu(username):
         Market.show_customers_info(username)
         market_manager_menu(username)
     elif item == '7':
+        Market.customer_list(username)
+        market_manager_menu(username)
+    elif item == '8':
         customer_exist = Market.customer_list(username)
         if customer_exist:
             costumer = input('Which costumer do you want to block? (Enter Username)')
             Market.block_customer(username, costumer)
+            print(f'The user {costumer} blocked successfully')
+            market_manager_menu(username)
         market_manager_menu(username)
-    elif item == '8':
-        main_menu()
     elif item == '9':
+        main_menu()
+    elif item == '10':
         sys.exit()
 
 
