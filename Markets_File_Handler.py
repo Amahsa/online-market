@@ -100,9 +100,4 @@ class MarketBlockCostumersFileHandler(FileHandler):
         self.file_path = 'Markets' + '/' + file_path + '/' + 'block_costumers.txt'
         super().__init__(self.file_path)
 
-# test3 = MarketsCostumersFileHandler()
-# test3.add_to_file({'username': '0123465846'})
-#
-# test = MarketsFileHandler('mahsa.txt')
-# test.add_to_file({'mahsa': 'Aflaki'})
-# print(test.read_file())
+

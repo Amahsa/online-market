@@ -4,10 +4,11 @@ from All_Users_File_Handler import UsersFileHandler
 import logging
 from prettytable import from_csv
 from prettytable import PrettyTable
-from purchase_invoices import invoice
+from purchase_invoices import Invoice
 import datetime
 
-logging.basicConfig(filename='log.log', filemode='a', level=logging.DEBUG)
+logging.basicConfig(filename='log.log', filemode='a', level=logging.DEBUG,
+                    format='%(asctime)s - %(process)d - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
 
 def convert_string_to_dict(dict_list_string):
@@ -30,7 +31,7 @@ def convert_string_to_dict(dict_list_string):
     return b
 
 
-def show_table2(file_path):
+def show_table(file_path):
     with open(file_path) as f:
         my_table = from_csv(f)
     print(my_table)
@@ -52,67 +53,10 @@ def show_factor(list_dict):
     print(x)
 
 
-def show_table(list_dict):
-    try:
-        header = list(list_dict[0].keys())
-        print('\n' + u'\u2500' * 22 * len(header))
-        print('|' + ' ' * 4, end='')
-        for item in header:
-            print(item.center(20, ' '), end='|')
-        print('\n' + u'\u2500' * 22 * len(header))
-        for i, item in enumerate(list_dict):
-            print('|' + str(i + 1).center(3, ' ') + '|', end='')
-            values = item.values()
-            for val in values:
-                if isinstance(val, list):
-                    show_table(val)
-                elif isinstance(val, str):
-                    print(val.center(20, ' '), end='|')
-            print('\n' + u'\u2500' * 22 * len(header))
-    except TypeError:
-        print('Nothing to show!')
-        logging.warning('Try to open a not existed file')
-
-
-def show_invoice(list_dict):
-    try:
-        list_ = list_dict[0]
-        print('\n' + u'\u2500' * 21 * 5)
-        print('|' + ' ' * 4, end='')
-        print('Market Name:'.center(16, " "), list_['market_name'].center(16, ' '), end='|')
-        print('Costumer Name:'.center(16, " "), list_['costumer_name'].center(16, ' '), end='|')
-        print('Date:'.center(16, " "), list_['date'].center(16, ' '), end='|')
-        a = []
-        a2 = []
-        temp = list_['product'].split("},{")
-        for i, item in enumerate(temp):
-            temp[i] = item.split("'")
-        for j in temp:
-            for i, item in enumerate(j):
-                if i % 2 != 0:
-                    a2.append(item)
-            a.append(a2)
-
-        def convert(lst):
-            res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
-            return res_dct
-
-        b = []
-        for item in a:
-            b.append(convert(item))
-        show_table(b)
-        print('|' + f"total price: '{list_['total_price']}".center(105, ' ') + '|', end='')
-        print('\n' + u'\u2500' * 21 * 5)
-    except TypeError:
-        print('Nothing to show!')
-        logging.warning('Try to open a not existed file')
-
-
 def not_block(costumer, list_dict):
     for item in list_dict:
         if item['username'] == costumer and item['status'] == 'active':
             return True
-
 
 
 class Market:
@@ -131,19 +75,14 @@ class Market:
         products_file.add_to_file(product.__dict__)
 
     @staticmethod
-    def inventory(username):
+    def view_inventory(username):
         products_file = MarketsProductsFileHandler(username)
         file_path = products_file.file_path
         if os.path.exists(file_path):
-            show_table2(file_path)
+            show_table(file_path)
         else:
             print('There is no products to show')
             logging.info('Try to read not exist file (products.txt)')
-        # all_products_list = products_file.read_file()
-        # if not all_products_list:
-        #     print('there is no product to show!')
-        # else:
-        #     show_table(all_products_list)
 
     @staticmethod
     def inventory_alert(username):
@@ -159,7 +98,7 @@ class Market:
                 x.field_names = temp[0].keys()
                 for item in temp:
                     x.add_row(item.values())
-                print("This products aren out of range: ")
+                print("This products are out of range: ")
                 print(x)
             else:
                 print('No products are being finished')
@@ -168,10 +107,9 @@ class Market:
             logging.info('Try to read not exist file (products.txt)')
 
     @staticmethod
-    def customer_purchase_invoices(username):  # فاکتور خرید مشتری ها
+    def customer_purchase_invoices(username):
         customers_invoices_file = MarketInvoicesFileHandler(username)
         list_dict = customers_invoices_file.read_file()
-        # file_path = customers_invoices_file.file_path
         if os.path.exists(customers_invoices_file.file_path):
             for item in list_dict:
                 show_factor([item])
@@ -180,94 +118,72 @@ class Market:
             print('There is no factors to show')
             logging.info('Try to read not exist file (invoices.txt)')
 
-        # all_customers_invoices = customers_invoices_file.read_file()
-        # show_invoice(all_customers_invoices)
-
     @staticmethod
     def invoice_search(username, customer_phone='', date='', until_date=''):
+        def search_by_phone(customer_phone, all_invoice_list):
+            filtered_invoice_list = []
+            if customer_phone:
+                for invoice_ in all_invoice_list:
+                    if customer_phone in invoice_['costumer_name']:
+                        filtered_invoice_list.append(invoice_)
+                return filtered_invoice_list
+            else:
+                return all_invoice_list
+
+        def search_by_date(date, all_invoice_list):
+            filtered_invoice_list = []
+            if date:
+                for invoice_ in all_invoice_list:
+                    if invoice_['date'] == date:
+                        filtered_invoice_list.append(invoice_)
+                return filtered_invoice_list
+            else:
+                return all_invoice_list
+
+        def search_by_until_date(date, all_invoice_list):
+            filtered_invoice_list = []
+            if date:
+                for invoice_ in all_invoice_list:
+                    if invoice_['date'] <= date:
+                        filtered_invoice_list.append(invoice_)
+                return filtered_invoice_list
+            else:
+                return all_invoice_list
+
         customer_file = MarketsCostumersFileHandler(username)
         invoice_file = MarketInvoicesFileHandler(username)
         customer_file_path = customer_file.file_path
         invoice_file_path = invoice_file.file_path
 
-        def search_by_date_and_phone(customer_phone, date):
-            factors_list = []
-            invoice_list = invoice_file.read_file()
-            for invoice_ in invoice_list:
-                if invoice_['costumer_name'] + invoice_['date'] == customer_phone + date:
-                    factors_list.append(invoice_)
-            return factors_list
-
-        def search_by_until_date_and_phone(customer_phone, date):
-            factors_list = []
-            invoice_list = invoice_file.read_file()
-            for invoice_ in invoice_list:
-                if invoice_['costumer_name'] == customer_phone and invoice_['date'] <= date:
-                    factors_list.append(invoice_)
-            return factors_list
-
-        def search_by_phone(customer_phone):
-            factors_list = []
-            invoice_list = invoice_file.read_file()
-            for invoice_ in invoice_list:
-                if invoice_['costumer_name'] == customer_phone:
-                    factors_list.append(invoice_)
-            return factors_list
-
-        def search_by_date(date):
-            factors_list = []
-            invoice_list = invoice_file.read_file()
-            for invoice_ in invoice_list:
-                if invoice_['date'] == date:
-                    factors_list.append(invoice_)
-            return factors_list
-
-        def search_by_until_date(date):
-            factors_list = []
-            invoice_list = invoice_file.read_file()
-            for invoice_ in invoice_list:
-                if invoice_['date'] <= date:
-                    factors_list.append(invoice_)
-            return factors_list
-
         if os.path.exists(customer_file_path) and os.path.exists(invoice_file_path):
-            if customer_phone and date:
-                invoices = search_by_date_and_phone(customer_phone, date)
-                if invoices: [show_factor([item]) for item in invoices]
-                else: print('No date matched to your order!')
-            elif customer_phone and until_date:
-                invoices = search_by_until_date_and_phone(customer_phone, until_date)
-                if invoices: [show_factor([item]) for item in invoices]
-                else: print('No date matched to your order!')
-            elif customer_phone:
-                invoices = search_by_phone(customer_phone)
-                if invoices: [show_factor([item]) for item in invoices]
-                else: print('No date matched to your order!')
-            elif date:
-                invoices = search_by_date(date)
-                if invoices: [show_factor([item]) for item in invoices]
-                else: print('No date matched to your order!')
-            elif until_date:
-                invoices = search_by_until_date(until_date)
-                if invoices: [show_factor([item]) for item in invoices]
-                else: print('No date matched to your order!')
+
+            all_invoice_list = invoice_file.read_file()
+            invoices = ''
+            if date:
+                invoices = search_by_date(date, search_by_phone(customer_phone, all_invoice_list))
+            else:
+                invoices = search_by_until_date(until_date, search_by_phone(customer_phone, all_invoice_list))
+            if invoices:
+                [show_factor([item]) for item in invoices]
+            else:
+                print('No data matched to your order!')
         else:
             print('There is No Costumers or invoices')
             logging.info('Try to read not exist file (costumers.txt)')
 
     @staticmethod
-    def customer_list(username):
+    def customer_list(username): # just phone number and status(block/active)
         customer_file = MarketsCostumersFileHandler(username)
         file_path = customer_file.file_path
         if os.path.exists(file_path):
-            show_table2(file_path)
+            show_table(file_path)
             return True
         else:
             print('There is No Costumer')
             logging.info('Try to read not exist file (costumers.txt)')
 
     @staticmethod
-    def show_customers_info(username):
+    def show_customers_info(username): # phone number, status, its invoices
         customer_file = MarketsCostumersFileHandler(username)
         invoice_file = MarketInvoicesFileHandler(username)
         file_path = customer_file.file_path
@@ -283,25 +199,12 @@ class Market:
         else:
             print('There is No Costumer')
             logging.info('Try to read not exist file (costumers.txt)')
-    # @staticmethod
-    # def update(object,**kwargs1,**kwargs2 ):
-    #     list_dict = object.read_file()
-    #     found = True
-    #     for item in list_dict:
-    #         for key, value in kwargs1.items():
-    #             if item[key] != value:
-    #                 found = False
-    #                 break
-    #         if found:
-    #             for key, value in kwargs1.items():
-    #                 item[key] = kwargs2[key]
-    #             break
 
 
     @staticmethod
     def block_customer(market, costumer):
         block_costumers_file = MarketBlockCostumersFileHandler(market)
-        all_costumers_file=MarketsCostumersFileHandler(market)
+        all_costumers_file = MarketsCostumersFileHandler(market)
         list_dict = block_costumers_file.read_file()
         if not_block(costumer, all_costumers_file.read_file()):
             temp_dict = {}
@@ -372,6 +275,41 @@ class Market:
         update_product_after_shopping(market_username, shopping_list)
         invoice_file_handler = MarketInvoicesFileHandler(market_username)
         now = datetime.datetime.now()
-        market_invoice = invoice(market_name=market_username, costumer_name=costumer_username,
+        market_invoice = Invoice(market_name=market_username, costumer_name=costumer_username,
                                  product=shopping_list, date=now, total_price=total_price)
         invoice_file_handler.add_to_file(market_invoice)
+
+
+
+
+        # @staticmethod
+        # def update(object,**kwargs1,**kwargs2 ):
+        #     list_dict = object.read_file()
+        #     found = True
+        #     for item in list_dict:
+        #         for key, value in kwargs1.items():
+        #             if item[key] != value:
+        #                 found = False
+        #                 break
+        #         if found:
+        #             for key, value in kwargs1.items():
+        #                 item[key] = kwargs2[key]
+        #             break
+
+
+
+        # def search_by_date_and_phone(customer_phone, date):
+        #     factors_list = []
+        #     invoice_list = invoice_file.read_file()
+        #     for invoice_ in invoice_list:
+        #         if f'{customer_phone + date}' in f"{invoice_['costumer_name']} + {invoice_['date']}":
+        #             factors_list.append(invoice_)
+        #     return factors_list
+        #
+        # def search_by_until_date_and_phone(customer_phone, date):
+        #     factors_list = []
+        #     invoice_list = invoice_file.read_file()
+        #     for invoice_ in invoice_list:
+        #         if invoice_['costumer_name'] == customer_phone and invoice_['date'] <= date:
+        #             factors_list.append(invoice_)
+        #     return factors_list

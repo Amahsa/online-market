@@ -20,15 +20,19 @@ def validation_phone_number(phone_number):
     if re.search(regex, phone_number):
         return True
 
+
 def validation_password(password):
     regex = '[\w\d]{6}[\w\d]*'
     if re.search(regex, password):
         return True
 
+
 def validation_time(time_):
     regex = '^\d{2}:\d{2}:\d{2}\s*$'
     if re.search(regex, time_):
         return True
+
+
 def user_not_taken(username):
     all_users_file = UsersFileHandler()
     all_users = all_users_file.read_file()
@@ -83,7 +87,7 @@ def main_menu():
 
 
 def register_manager():
-    market_name,start_working , end_working, password ='','1','0','0'
+    market_name, start_working, end_working, password = '', '1', '0', '0'
     phone_number = input('Phone number (this will be use as your username): ')
     while not validation_phone_number(phone_number):
         print('Enter valid phone number!')
@@ -103,11 +107,11 @@ def register_manager():
         while not start_working or not end_working or end_working < start_working:
             while not validation_time(str(start_working)):
                 start_working = input('Opening time (Use 24-hour format hh:mm:ss ): ')
-            start_working = list(map(int,start_working.split(':')))
+            start_working = list(map(int, start_working.split(':')))
             start_working = time(start_working[0], start_working[1], start_working[2])
             while not validation_time(str(end_working)):
                 end_working = input('Closing time (Use 24-hour format hh:mm:ss): ')
-            end_working = list(map(int,end_working.split(':')))
+            end_working = list(map(int, end_working.split(':')))
             end_working = time(end_working[0], end_working[1], end_working[2])
             # if end_working < start_working:
             #     while end_working <= start_working:
@@ -133,7 +137,6 @@ def register():
         pass
     else:
         sys.exit()
-
 
 
 def sign_in():
@@ -181,7 +184,7 @@ def market_manager_menu(username):
         add_product(username)
         market_manager_menu(username)
     elif item == '2':
-        Market.inventory(username)
+        Market.view_inventory(username)
         market_manager_menu(username)
     elif item == '3':
         Market.inventory_alert(username)
@@ -193,7 +196,7 @@ def market_manager_menu(username):
         customer_phone = input('Enter customer phone number or press Enter')
         date = input('Enter date or press Enter')
         until_date = input('Enter date or press Enter')
-        Market.invoice_search(username,customer_phone,date,until_date)
+        Market.invoice_search(username, customer_phone, date, until_date)
         market_manager_menu(username)
     elif item == '6':
         Market.show_customers_info(username)
@@ -213,7 +216,6 @@ def market_manager_menu(username):
         main_menu()
     elif item == '10':
         sys.exit()
-
 
 
 def customer_menu(username):
