@@ -267,7 +267,7 @@ def shopping(costumer_username_):
     def shopping_menu2(costumer_username, market_name):
         print(U"\u2500" * 50)
         print(f"Your chosen Market : {market_name}")
-        print(' ' * 20 + '1. View list of goods')
+        print(' ' * 20 + '1. View list of products')
         print(' ' * 20 + '2. Product search')
         print(' ' * 20 + '3. Add a Product to cart')
         print(' ' * 20 + '4. View pre_invoice')
@@ -288,7 +288,6 @@ def shopping(costumer_username_):
             product_brand = input('Enter the brand : ')
             count = input(f'How many {product_name}s do you want? ')
             factored_product = Market.check_inventory(market_name, product_name, product_brand, count)
-            print(factored_product)
             if factored_product:
                 Customer.insert_to_cart(costumer_username, market_name, factored_product)
             shopping_menu2(costumer_username, market_name)
@@ -310,11 +309,7 @@ def shopping(costumer_username_):
                         shopping_menu2(costumer_username, market_name)
                 elif item == '2':
                     cart = Customer.view_pre_invoice(costumer_username, market_name)
-                    for item in cart:
-                        print(item)
-                        edit = input('Edit e | Remove r')
-                        if edit == 'e':
-                            Customer.edit_pre_invoice(costumer_username, market_name)
+                    Customer.edit_pre_invoice(costumer_username, market_name)
             else:
                 print('Your cart is empty')
             shopping_menu2(costumer_username, market_name)
