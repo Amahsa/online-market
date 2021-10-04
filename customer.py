@@ -90,7 +90,11 @@ class Customer:
         costumers = Customer_File_Handler.CostumerFileHandler().read()
         costumer = costumers[costumer_username]
         cart = costumer['cart'][market_name]
-        for i, item in enumerate(cart):
+        # به ازای هر کالای موجود در سبد خرید، آن را نمایش داده
+        # و اگر میخواهیم تعداد کالای درخواستی را تغییر دهیم مقدار جدید را وارد کرده
+        # اگر بخواهیم آن را حذف کنیم کلید  r  را زده
+        # در غیر این صورت کلید  Enter  را زده
+        for i, item in enumerate(cart):  #
             print(U"\u2500" * 50)
             show_table2([item])
             print(U"\u2500" * 50)
@@ -98,28 +102,16 @@ class Customer:
                 'Enter new count or Enter r for remove it or just press Enter (new count|r|press Enter): ')
             if new_value:
                 if new_value.isdigit():
-                    if int(new_value) > 0:
+                    if int(new_value) > 0: # چک میشود که مقدار جدید بزرگتر از  0  باشد
                         item['count'] = new_value
-                        item['price'] = int(new_value) * int(item['single_price'])
+                        item['price'] = int(new_value) * int(item['single_price']) # بروز رسانی قیمت
                     else:
                         print('The count must be grater than zero')
                 elif new_value == 'r':
-                    cart.pop(i)
+                    cart.pop(i) # حذف کالا از سبد خرید
 
-        Customer_File_Handler.CostumerFileHandler().update(costumers)
+        Customer_File_Handler.CostumerFileHandler().update(costumers) # بروز رسانی سبد خرید
 
-    @staticmethod
-    def invoicing(market_name, costumer_phone, product):
-        date = datetime.datetime.now()
-        total_price = 0
-        for item in product:
-            total_price += item['price']
-        invoice = {}
-        invoice['market_name'] = market_name
-        invoice['costumer_phone'] = costumer_phone
-        invoice['product'] = product
-        invoice['date'] = date
-        invoice['total_price'] = total_price
 
     @classmethod
     def confirm_purchase(cls, costumer_username, market_name):
@@ -141,3 +133,17 @@ class Customer:
         file_info = Customer_File_Handler.CostumerFileHandler()
         file_info.add_to_file(self.__dict__)
         pass
+
+
+#   @staticmethod
+    # def invoicing(market_name, costumer_phone, product):
+    #     date = datetime.datetime.now()
+    #     total_price = 0
+    #     for item in product:
+    #         total_price += item['price']
+    #     invoice = {}
+    #     invoice['market_name'] = market_name
+    #     invoice['costumer_phone'] = costumer_phone
+    #     invoice['product'] = product
+    #     invoice['date'] = date
+    #     invoice['total_price'] = total_price
