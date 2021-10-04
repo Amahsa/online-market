@@ -27,22 +27,3 @@ class CostumerFileHandler():
             return obj
 
 
-#         storage_path = f'Costumers/{file_path}'
-#         if not os.path.exists(storage_path):
-#             os.mkdir(storage_path)
-#         self.file_path = f'Costumers/{file_path}/cart.txt'
-#         super().__init__(self.file_path)
-#
-#
-# with open('user.json','w') as json_file:
-#     json.dump(dict1, json_file, indent=3)
-
-#
-# text = {1: 1, 2: 2, 3: 3}
-# a = CostumerCartFileHandler('test.json')
-# a.add_to_file(text)
-# a.add_to_file(text)
-# b = a.read()
-# print(b['user2'])
-# b['user2'] = text
-# a.add_to_file(b)
