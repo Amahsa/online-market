@@ -290,7 +290,6 @@ class Market:
                 market['invoices'].append(invoice.__dict__)
                 if costumer_phone not in market['costumers']:
                     market['costumers'].append(costumer_phone)
-                # print(11, market)
                 FileHandler().update(all_info)
                 return True
 
@@ -317,7 +316,6 @@ class Market:
     @staticmethod
     def market_search(string):
         all_markets_info = FileHandler().read()
-        # all_markets_list = all_markets_file.read_file()
         temp = []
         for item in all_markets_info.keys():
             if string in item:
@@ -346,72 +344,8 @@ class Market:
     @staticmethod
     def get_market_name(market_username):
         all_markets_info = FileHandler().read()
-        # print(0, all_markets_info)
         for item in all_markets_info.keys():
-            # print(1, item)
-            # print(2, type(market_username))
-            # print(3, type(item['market_name']))
             if market_username == all_markets_info[item]['username']:
                 market_name = all_markets_info[item]['market_name']
                 return market_name
-        # print(f'There is no Market by name {market_name}')
 
-# ===================================================================================
-# a = datetime.datetime.strptime('12:12:12', '%H:%M:%S').strftime('%H:%M:%S')
-# now = datetime.datetime.now()
-# now = time(now.hour, now.minute, now.second)
-# # print(now > a)
-# a = []
-# # a.append(1, 2, 3)
-# print(a)
-# # datetime.strptime(date_time_str, '%d/%m/%y %H:%M:%S')
-# # time.hour
-#
-# # @staticmethod
-# # def update(object,**kwargs1,**kwargs2 ):
-# #     list_dict = object.read_file()
-# #     found = True
-# #     for item in list_dict:
-# #         for key, value in kwargs1.items():
-# #             if item[key] != value:
-# #                 found = False
-# #                 break
-# #         if found:
-# #             for key, value in kwargs1.items():
-# #                 item[key] = kwargs2[key]
-# #             break
-#
-#
-# # def search_by_date_and_phone(customer_phone, date):
-# #     factors_list = []
-# #     invoice_list = invoice_file.read_file()
-# #     for invoice_ in invoice_list:
-# #         if f'{customer_phone + date}' in f"{invoice_['costumer_name']} + {invoice_['date']}":
-# #             factors_list.append(invoice_)
-# #     return factors_list
-# #
-# # def search_by_until_date_and_phone(customer_phone, date):
-# #     factors_list = []
-# #     invoice_list = invoice_file.read_file()
-# #     for invoice_ in invoice_list:
-# #         if invoice_['costumer_name'] == customer_phone and invoice_['date'] <= date:
-# #             factors_list.append(invoice_)
-# #     return factors_list
-
-# def __init__(self, username, password, market_name, start, end):
-# test = Market('1', '1', 'Niloofar', '12:00:00', '24:00:00')
-# test.add_product_list('nili', 'milk', 'mihan', 20, 2000, '123', '12/12/12')
-
-
-# tesy = {'nili': {'username': '1', 'password': '1', 'market_name': 'nili', 'start': '12:00:00', 'end': '24:00:00',
-#                  'costumers': [], 'block_customers': ['09111111111'], 'products': [], 'invoices': []},
-#         'Niloofar': {'username': '1', 'password': '1', 'market_name': 'Niloofar', 'start': '12:00:00',
-#                      'end': '24:00:00', 'costumers': [], 'block_customers': [], 'products': [], 'invoices': []},
-#         'Negin': {'username': '09333333333',
-#                   'password': '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
-#                   'market_name': 'Negin', 'start': '07:00:00', 'end': '24:00:00', 'costumers': [],
-#                   'block_customers': [], 'products': [], 'invoices': []}}
-#
-
-# for key in tesy.keys():
-#     print(tesy[key])
