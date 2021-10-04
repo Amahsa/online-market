@@ -11,8 +11,7 @@ class UsersFileHandler:
             with open(self.file_path, 'r') as myfile:
                 reader = csv.DictReader(myfile)
                 return list(reader)
-        except FileNotFoundError as e:
-            print(e)
+        except FileNotFoundError:
             return
 
     def add_to_file(self, new_value):  # dict or list
