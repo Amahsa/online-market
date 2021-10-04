@@ -3,7 +3,7 @@ import os
 
 
 class CostumerFileHandler():
-    def __init__(self, path= 'costumers.json'):
+    def __init__(self, path='costumers.json'):
         self.path = path
 
     def add_to_file(self, new_value):
@@ -17,7 +17,7 @@ class CostumerFileHandler():
         with open(self.path, 'w') as json_file:
             json.dump(listObj, json_file, indent=4)
 
-    def update(self,new_value):
+    def update(self, new_value):
         with open(self.path, 'w') as json_file:
             json.dump(new_value, json_file, indent=4)
 
@@ -25,5 +25,3 @@ class CostumerFileHandler():
         with open(self.path, 'r') as fp:
             obj = json.load(fp)
             return obj
-
-
