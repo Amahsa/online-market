@@ -10,18 +10,20 @@ logging.basicConfig(filename='log.log', filemode='a', level=logging.DEBUG,
                     format='%(asctime)s - %(process)d - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
 
+# Read the file and display it
 def show_table(file_path):
     with open(file_path) as f:
         my_table = from_csv(f)
     print(my_table)
 
 
+# Display input data as a table
 def show_table2(list_dict):
     my_table = PrettyTable()
-    my_table.field_names = list(list_dict[0].keys())
+    my_table.field_names = list(list_dict[0].keys())  # heads
     temp = []
     for item in list_dict:
-        temp.append(list(item.values()))
+        temp.append(list(item.values()))  # rows
     my_table.add_rows(temp)
     print(my_table)
 
@@ -53,28 +55,23 @@ class Customer:
 
     @staticmethod
     def view_previous_invoices(username):
-        costumer_invoices_file = Customer_File_Handler.CostumerFileHandler().read()
-        info = costumer_invoices_file[username]
-        list_invoices = info['previous_invoices']
+        costumer_invoices_file = Customer_File_Handler.CostumerFileHandler().read()  # Fetch all customers
+        info = costumer_invoices_file[username]  # Fetch the desired customer
+        list_invoices = info['previous_invoices']  # Fetch customer purchase invoices
         if list_invoices:
             show_table2(list_invoices)
-            # print(list_invoices)
         else:
             print('There is no factors to show')
             logging.info('Try to read not exist file (invoices.txt)')
 
     @staticmethod
     def insert_to_cart(costumer_username, market_name, product):
-        costumers = Customer_File_Handler.CostumerFileHandler().read()
-        costumer = costumers[costumer_username]
-        cart = costumer['cart']
-        print(11, market_name)
-        print(22, list(cart.keys()))
-        print(33, market_name in list(cart.keys()))
-        if market_name in list(cart.keys()):
+        costumers = Customer_File_Handler.CostumerFileHandler().read()  # Fetch all customers
+        costumer = costumers[costumer_username]  # Fetch the desired customer
+        cart = costumer['cart']  # Fetch customer purchase cart
+        if market_name in list(cart.keys()):  # If the shopping cart is not empty
             cart[market_name].append(product)
         else:
-            print(44)
             cart[market_name] = []
             cart[market_name].append(product)
         Customer_File_Handler.CostumerFileHandler().update(costumers)
@@ -85,8 +82,7 @@ class Customer:
         costumer = costumers[costumer_username]
         cart = costumer['cart'][market_name]
         if cart != [None] and cart != []:
-            print(cart)
-            show_factor(cart)
+            show_table2(cart)
             return cart
 
     @staticmethod
@@ -95,16 +91,21 @@ class Customer:
         costumer = costumers[costumer_username]
         cart = costumer['cart'][market_name]
         for i, item in enumerate(cart):
-            print(item)
-            new_value = input('Enter new count or Enter r for remove it or just press Enter')
+            print(U"\u2500" * 50)
+            show_table2([item])
+            # print(item)
+            print(U"\u2500" * 50)
+            new_value = input(
+                'Enter new count or Enter r for remove it or just press Enter (new count|r|press Enter): ')
             if new_value:
                 if new_value.isdigit():
                     if int(new_value) > 0:
                         item['count'] = new_value
+                        item['price'] = int(new_value) * int(item['single_price'])
                     else:
                         print('The count must be grater than zero')
-                elif item == 'r':
-                    cart.pop[i]
+                elif new_value == 'r':
+                    cart.pop(i)
 
         Customer_File_Handler.CostumerFileHandler().update(costumers)
 
