@@ -1,3 +1,0 @@
-username,status
-09178821383,block
-09136905228,active

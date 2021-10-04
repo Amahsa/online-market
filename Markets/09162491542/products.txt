@@ -1,4 +1,0 @@
-product_name,brand,product_count,product_price,barcode,expiration_date
-noteook,papco,50,10000,123,
-pen,adel,50,2000,12,
-pencel,INOX,0,12000,0714,
