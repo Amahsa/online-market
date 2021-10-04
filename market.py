@@ -133,7 +133,6 @@ class Market:
         customers_invoices_list_dict = FileHandler().read()[market_name]['invoices']
         if customers_invoices_list_dict:
             for item in customers_invoices_list_dict:
-                # show_table2([item])
                 show_factor([item])
                 print()
         else:
@@ -172,13 +171,7 @@ class Market:
             else:
                 return all_invoice_list
 
-        # customer_file = MarketsCostumersFileHandler(username)
-        # invoice_file = MarketInvoicesFileHandler(username)
-        # customer_file_path = customer_file.file_path
-        # invoice_file_path = invoice_file.file_path
         invoices_list = FileHandler().read()[market_name]['invoices']
-        # if os.path.exists(customer_file_path) and os.path.exists(invoice_file_path):
-        # all_invoice_list = invoice_file.read_file()
         if date:
             invoices = search_by_date(date, search_by_phone(customer_phone, invoices_list))
         else:
@@ -188,9 +181,6 @@ class Market:
         else:
             print('No data matched to your order!')
 
-    # else:
-    #     print('There is No Costumers or invoices')
-    #     logging.info('Try to read not exist file (costumers.json)')
 
     @staticmethod
     def customer_list(market_name):  # just phone number and status(block/active)
@@ -236,14 +226,6 @@ class Market:
         else:
             print('This costumer is blocked since before!')
 
-    #
-    # def save(self):
-    #     user = UsersFileHandler()
-    #     user.add_to_file({'username': self.username, 'password': self.password, 'type': 'Manager'})
-    #     file_info = FileHandler()
-    #     file_info.add_to_file(self.__dict__)
-    #     pass
-    #
     @staticmethod
     def find_product_by_name_and_brand(market_name, product_name='', brand=''):
         products_list = FileHandler().read()[market_name]['products']
@@ -257,15 +239,7 @@ class Market:
         else:
             print('There is no product matched to your order!')
 
-    #
-    # @staticmethod
-    # def find_product_by_barcode(market_username, barcode):
-    #     products_file_handler = MarketsProductsFileHandler(market_username)
-    #     products_list = products_file_handler.read_file()
-    #     for item in products_list:
-    #         if item['barcode'] == barcode:
-    #             return item
-    #
+
     @staticmethod
     def check_inventory(market_name, product_name, brand, count):
         products_list = FileHandler().read()[market_name]['products']
@@ -273,7 +247,6 @@ class Market:
         temp = {}
         for item in products_list:
             if f'{product_name} {brand}' == f'{item["product_name"]} {item["brand"]}':
-                # print(item)
                 product = item
                 break
         if product:
@@ -287,27 +260,9 @@ class Market:
         else:
             print('This product is not available')
 
-    # @staticmethod
-    # def update_products(market_username, product, new_value):
-    #     products_file_handler = MarketsProductsFileHandler(market_username)
-    #     products_object_list = products_file_handler.read_file()
-    #     for item in products_object_list:
-    #         if item['barcode'] == product['barcode']:
-    #             item = new_value
-    #             break
-    #     products_file_handler.update(products_object_list)
 
-    # @staticmethod
-    # def insert_costumer(username, costumer_phone):
-    #     temp_dict = {}
-    #     temp_dict['username'] = costumer_phone
-    #     temp_dict['status'] = 'active'
-    #     costumer_file = MarketsCostumersFileHandler(username)
-    #     costumer_file.add_to_file(temp_dict)
-    #
     @staticmethod
     def shopping(market_name, costumer_phone, shopping_list):
-        # product_list:[{ products_name |  brand   | single_price | count | price }]
         all_info = FileHandler().read()
         market = all_info[market_name]
 
@@ -327,9 +282,11 @@ class Market:
                     for item in products_list:
                         if f"{item['product_name']} {item['brand']}" == f"{product_name} {brand}":
                             item['product_count'] = int(item['product_count']) - int(number_of_requests)
-                            # print(10, item['product_count'])
+                            if item['product_count'] == 0:
+                                logging.warning(f"{item['product_name']} {item['brand']} is out of range")
 
                 invoice = Invoice(market_name, costumer_phone, shopping_list)
+                logging.info('New invoice issuance')
                 market['invoices'].append(invoice.__dict__)
                 if costumer_phone not in market['costumers']:
                     market['costumers'].append(costumer_phone)
