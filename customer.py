@@ -93,7 +93,6 @@ class Customer:
         for i, item in enumerate(cart):
             print(U"\u2500" * 50)
             show_table2([item])
-            # print(item)
             print(U"\u2500" * 50)
             new_value = input(
                 'Enter new count or Enter r for remove it or just press Enter (new count|r|press Enter): ')
