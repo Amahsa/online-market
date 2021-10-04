@@ -4,7 +4,7 @@ from prettytable import PrettyTable
 from All_Users_File_Handler import UsersFileHandler
 import datetime
 from invoice import Invoice
-import json_handler
+import Customer_File_Handler
 
 logging.basicConfig(filename='log.log', filemode='a', level=logging.DEBUG,
                     format='%(asctime)s - %(process)d - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
@@ -53,7 +53,7 @@ class Customer:
 
     @staticmethod
     def view_previous_invoices(username):
-        costumer_invoices_file = json_handler.CostumerFileHandler().read()
+        costumer_invoices_file = Customer_File_Handler.CostumerFileHandler().read()
         info = costumer_invoices_file[username]
         list_invoices = info['previous_invoices']
         if list_invoices:
@@ -65,7 +65,7 @@ class Customer:
 
     @staticmethod
     def insert_to_cart(costumer_username, market_name, product):
-        costumers = json_handler.CostumerFileHandler().read()
+        costumers = Customer_File_Handler.CostumerFileHandler().read()
         costumer = costumers[costumer_username]
         cart = costumer['cart']
         print(11, market_name)
@@ -77,11 +77,11 @@ class Customer:
             print(44)
             cart[market_name] = []
             cart[market_name].append(product)
-        json_handler.CostumerFileHandler().update(costumers)
+        Customer_File_Handler.CostumerFileHandler().update(costumers)
 
     @staticmethod
     def view_pre_invoice(costumer_username, market_name):
-        costumers = json_handler.CostumerFileHandler().read()
+        costumers = Customer_File_Handler.CostumerFileHandler().read()
         costumer = costumers[costumer_username]
         cart = costumer['cart'][market_name]
         if cart != [None] and cart != []:
@@ -91,7 +91,7 @@ class Customer:
 
     @staticmethod
     def edit_pre_invoice(costumer_username, market_name):
-        costumers = json_handler.CostumerFileHandler().read()
+        costumers = Customer_File_Handler.CostumerFileHandler().read()
         costumer = costumers[costumer_username]
         cart = costumer['cart'][market_name]
         for i, item in enumerate(cart):
@@ -106,7 +106,7 @@ class Customer:
                 elif item == 'r':
                     cart.pop[i]
 
-        json_handler.CostumerFileHandler().update(costumers)
+        Customer_File_Handler.CostumerFileHandler().update(costumers)
 
     @staticmethod
     def invoicing(market_name, costumer_phone, product):
@@ -123,7 +123,7 @@ class Customer:
 
     @classmethod
     def confirm_purchase(cls, costumer_username, market_name):
-        costumers = json_handler.CostumerFileHandler().read()
+        costumers = Customer_File_Handler.CostumerFileHandler().read()
         costumer = costumers[costumer_username]
         costumer_market_cart = costumer['cart'][market_name]
         # Build a purchase invoice
@@ -133,11 +133,11 @@ class Customer:
         invoices.append(invoice.__dict__)
         # Clear Shopping Cart and Update Costumers info file
         costumer['cart'][market_name] = []
-        json_handler.CostumerFileHandler().update(costumers)
+        Customer_File_Handler.CostumerFileHandler().update(costumers)
 
     def save(self):
         user = UsersFileHandler()
         user.add_to_file({'username': self.username, 'password': self.password, 'type': 'Customer'})
-        file_info = json_handler.CostumerFileHandler()
+        file_info = Customer_File_Handler.CostumerFileHandler()
         file_info.add_to_file(self.__dict__)
         pass

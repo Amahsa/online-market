@@ -1,10 +1,10 @@
 import logging
 from market import Market
+from customer import Customer
 from All_Users_File_Handler import UsersFileHandler
 import sys
 import hashlib
 import re
-from datetime import time
 
 logging.basicConfig(level=logging.DEBUG, filename='Log.log', filemode='a',
                     format='%(asctime)s - %(process)d - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
@@ -36,13 +36,13 @@ def validation_time(time_):
 def user_not_taken(username):
     all_users_file = UsersFileHandler()
     all_users = all_users_file.read_file()
-    found = False
+    not_found = True
     if all_users:
         for item in all_users:
             if item['username'] == username:
-                found = True
-                return False
-        if not found:
+                not_found = False
+                return not_found
+        if not_found:
             return True
     return True
 
@@ -54,8 +54,7 @@ def user_info(username):
             return item
 
 
-def add_product(username):
-    # print('market, product_name, brand, product_count, product_price, barcode, expiration_date')
+def add_product(market_name):
     continue_ = 'y'
     while continue_ == 'y':
         product_name = input('product name : ')
@@ -64,10 +63,10 @@ def add_product(username):
         product_price = input('price : ')
         barcode = input('barcode : ')
         expiration_date = input('expiration date (dd-mm-yyyy): ')
-        Market.register_product_list(username=username, product_name=product_name, brand=brand,
-                                     product_count=product_count, product_price=product_price, barcode=barcode,
-                                     expiration_date=expiration_date)
-        logging.info(f"A market manager by username:{username} added a product")
+        Market.add_product(market_name=market_name, product_name=product_name, brand=brand,
+                           product_count=product_count, product_price=product_price, barcode=barcode,
+                           expiration_date=expiration_date)
+        logging.info(f"A market manager added a product")
         continue_ = input('continue to add product (y/n)? ').lower()
 
 
@@ -84,6 +83,8 @@ def main_menu():
         sign_in()
     elif item == '3':
         sys.exit()
+    else:
+        main_menu()
 
 
 def register_manager():
@@ -107,17 +108,9 @@ def register_manager():
         while not start_working or not end_working or end_working < start_working:
             while not validation_time(str(start_working)):
                 start_working = input('Opening time (Use 24-hour format hh:mm:ss ): ')
-            start_working = list(map(int, start_working.split(':')))
-            start_working = time(start_working[0], start_working[1], start_working[2])
             while not validation_time(str(end_working)):
                 end_working = input('Closing time (Use 24-hour format hh:mm:ss): ')
-            end_working = list(map(int, end_working.split(':')))
-            end_working = time(end_working[0], end_working[1], end_working[2])
-            # if end_working < start_working:
-            #     while end_working <= start_working:
-            #         print('Enter valid time ')
-            #         start_working = input('Opening time (Use 24-hour format): ')
-            #         end_working = input('Closing time (Use 24-hour format): ')
+
         Market(username, password_hashing(password), market_name, start_working, end_working)
         logging.info(f"A manager by username:{username} is signed up")
     else:
@@ -133,10 +126,13 @@ def register():
     if item == '1':
         register_manager()
         main_menu()
-    if item == '2':
-        pass
-    else:
+    elif item == '2':
+        register_customer()
+        main_menu()
+    elif item == '3':
         sys.exit()
+    else:
+        register()
 
 
 def sign_in():
@@ -150,11 +146,11 @@ def sign_in():
                 customer_menu(user['username'])
             elif user['type'] == 'Manager':
                 try:
-                    Market.inventory_alert(username)
-                except Exception as e:
+                    Market.inventory_alert(Market.get_market_name(username))
+                except TypeError:
                     logging.exception('error in showing inventory', exc_info=True)
                 logging.info(f"A manager by username:{user['username']} signed in")
-                market_manager_menu(user['username'])
+                market_manager_menu(Market.get_market_name(username))
         else:
             print('Incorrect password ')
             logging.warning(f"A user by username:{user['username']} entered incorrect password")
@@ -168,7 +164,7 @@ def sign_in():
 def market_manager_menu(username):
     print(U"\u2500" * 50)
     print(' Manager Menu '.center(50, U"\u2500"))
-    print(' ' * 20 + '1. Register product list')
+    print(' ' * 20 + '1. add product')
     print(' ' * 20 + '2. View list of Products')
     print(' ' * 20 + '3. Check unavailable products')
     print(' ' * 20 + '4. View All invoices')
@@ -184,7 +180,7 @@ def market_manager_menu(username):
         add_product(username)
         market_manager_menu(username)
     elif item == '2':
-        Market.view_inventory(username)
+        Market.view_list_of_products(username)
         market_manager_menu(username)
     elif item == '3':
         Market.inventory_alert(username)
@@ -218,8 +214,149 @@ def market_manager_menu(username):
         sys.exit()
 
 
-def customer_menu(username):
-    print('1. ')
+def register_customer():
+    first_name = input('First Name: ')
+    last_name = input('Last Name: ')
+    phone_number = input('Phone number (this will be use as your username): ')
+    while not validation_phone_number(phone_number):
+        print('Enter valid phone number!')
+        phone_number = input('Phone number (this will be use as your username): ')
+    username = phone_number
+    if user_not_taken(username):
+        password = ''
+        while not validation_password(password):
+            password = input('Password : ')
+            temp = input('Repeat password : ')
+            if temp != password:
+                print('Error')
+                while temp != password:
+                    password = input('password : ')
+                    temp = input('Repeat password : ')
+
+        Customer(first_name, last_name, username, password_hashing(password))
+        logging.info(f"A Customer by username:{username} is signed up")
+    else:
+        print('You registered by this phone number since before!')
+        logging.info(f"Try to re-register by username:{username}")
 
 
-main_menu()
+def customer_menu(costumer_username):
+    print(U"\u2500" * 50)
+    print(' Costumer Menu '.center(50, U"\u2500"))
+    print(' ' * 20 + '1. View previous invoices')
+    print(' ' * 20 + '2. Shopping')
+    print(' ' * 20 + '3. Back to main menu')
+    print(' ' * 20 + '4. Exit')
+    print(U"\u2500" * 50)
+    item = input('Choose an item : ')
+    if item == '1':
+        Customer.view_previous_invoices(costumer_username)
+        customer_menu(costumer_username)
+    elif item == '2':
+        shopping(costumer_username)
+        customer_menu(costumer_username)
+    elif item == '3':
+        main_menu()
+    elif item == '4':
+        sys.exit()
+    else:
+        customer_menu(costumer_username)
+
+
+def shopping(costumer_username_):
+    def shopping_menu2(costumer_username, market_name):
+        print(U"\u2500" * 50)
+        print(f"Your chosen Market : {market_name}")
+        print(' ' * 20 + '1. View list of goods')
+        print(' ' * 20 + '2. Product search')
+        print(' ' * 20 + '3. Add a Product to cart')
+        print(' ' * 20 + '4. View pre_invoice')
+        print(' ' * 20 + '5. Back')
+        print(' ' * 20 + '6. Exit')
+        print(U"\u2500" * 50)
+        item = input('choose an item: ')
+        if item == '1':
+            Market.view_list_of_products(market_name)
+            shopping_menu2(costumer_username, market_name)
+        elif item == '2':
+            product_name = input('Enter the name of product : ')
+            product_brand = input('Enter the brand of product : ')
+            Market.find_product_by_name_and_brand(market_name, product_name, product_brand)
+            shopping_menu2(costumer_username, market_name)
+        elif item == '3':
+            product_name = input('Enter the name of product : ')
+            product_brand = input('Enter the brand : ')
+            count = input(f'How many {product_name}s do you want? ')
+            factored_product = Market.check_inventory(market_name, product_name, product_brand, count)
+            print(factored_product)
+            if factored_product:
+                Customer.insert_to_cart(costumer_username, market_name, factored_product)
+            shopping_menu2(costumer_username, market_name)
+        elif item == '4':
+            cart = Customer.view_pre_invoice(costumer_username, market_name)
+            if cart:
+                print(U"\u2500" * 50)
+                print(' ' * 20 + '1. Confirm purchase')
+                print(' ' * 20 + '2. Edit purchase')
+                print(U"\u2500" * 50)
+                item = input('choose an item: ')
+                if item == '1':
+                    error = Market.shopping(market_name, costumer_username, cart)
+                    if not error:
+                        Customer.confirm_purchase(costumer_username, market_name)
+                        logging.info(f"A Costumer shopped")
+                    else:
+                        print('Your request has been denied')
+                        shopping_menu2(costumer_username, market_name)
+                elif item == '2':
+                    cart = Customer.view_pre_invoice(costumer_username, market_name)
+                    for item in cart:
+                        print(item)
+                        edit = input('Edit e | Remove r')
+                        if edit == 'e':
+                            Customer.edit_pre_invoice(costumer_username, market_name)
+            else:
+                print('Your cart is empty')
+            shopping_menu2(costumer_username, market_name)
+        elif item == '5':
+            shopping(costumer_username)
+        elif item == '6':
+            sys.exit()
+
+    def shopping_menu1(costumer_username):
+        print(U"\u2500" * 50)
+        print(' ' * 20 + '1. view all markets')
+        print(' ' * 20 + '2. search a markets')
+        print(' ' * 20 + '3. Select a market')
+        print(' ' * 20 + '4. View previous invoice')
+        print(' ' * 20 + '5. Back')
+        print(' ' * 20 + '6. Exit')
+        print(U"\u2500" * 50)
+        item = input('choose an item: ')
+        if item == '1':
+            Market.view_the_list_of_active_stores()
+            shopping_menu1(costumer_username)
+        elif item == '2':
+            string = input('Enter the name of the desired store: ')
+            Market.market_search(string)
+            shopping_menu1(costumer_username)
+        elif item == '3':
+            market_name = input('Market Name: ')
+            # market_name = 'niloofar'
+            result = Market.market_accurate_search(market_name, costumer_username)
+            if result:
+                market_name_ = result['Market Name']
+                shopping_menu2(costumer_username, market_name_)
+            shopping_menu1(costumer_username)
+        elif item == '4':
+            Customer.view_previous_invoices(costumer_username)
+        elif item == '5':
+            customer_menu(costumer_username)
+        elif item == '6':
+            sys.exit()
+
+    shopping_menu1(costumer_username_)
+
+
+if __name__ == "__main__":
+    main_menu()
