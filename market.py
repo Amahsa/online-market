@@ -13,7 +13,7 @@ logging.basicConfig(filename='log.log', filemode='a', level=logging.DEBUG,
                     format='%(asctime)s - %(process)d - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
 
-def convert_string_to_dict(dict_list_string):
+def convert_string_to_dict(dict_list_string):  # تبدیل رشته به دیکشنری
     def convert(lst):
         res_dct = {lst[item_]: lst[item_ + 1] for item_ in range(0, len(lst), 2)}
         return res_dct
@@ -113,9 +113,9 @@ class Market:
         if products_list:
             temp = []
             for item in products_list:
-                if int(item['product_count']) <= 5:
+                if int(item['product_count']) <= 5:  # اگر موجودی کالا کمتر از 5 بود آن را به لیست اضافه کرده
                     temp.append(item)
-            if temp:
+            if temp:  # اگر کالایی در لیست وجود داشت
                 x = PrettyTable()
                 x.field_names = temp[0].keys()
                 for item in temp:
@@ -181,15 +181,14 @@ class Market:
         else:
             print('No data matched to your order!')
 
-
     @staticmethod
-    def customer_list(market_name):  # just phone number and status(block/active)
+    def customer_list(market_name):
         customer_file = FileHandler().read()[market_name]['costumers']
         if customer_file:
-            table = PrettyTable(['num','costumers PhoneNumber'])
+            table = PrettyTable(['num', 'costumers PhoneNumber'])
             temp = []
-            for i,item in enumerate(customer_file , start=1):
-                temp.append([i,item])
+            for i, item in enumerate(customer_file, start=1):
+                temp.append([i, item])
             table.add_rows(temp)
             print(table)
             return True
@@ -214,8 +213,9 @@ class Market:
             print('There is No Costumer')
             logging.info('Try to read not exist file (costumers.json)')
 
-    #
     @staticmethod
+    # اگر شماره ی وارد شده جز مشتری های فروشگاه باشد
+    # و از قبل بلاک نباشد، آن را به لیست بلاک های فروشگاه اضافه میکنیم
     def block_customer(market_name, costumer):
         all_info = FileHandler().read()
         block_costumers_list = all_info[market_name]['block_customers']
@@ -239,9 +239,12 @@ class Market:
         else:
             print('There is no product matched to your order!')
 
-
     @staticmethod
     def check_inventory(market_name, product_name, brand, count):
+        # وقتی مشتری کالایی را برای خرید انتخاب کرد،
+        # بررسی میشود که تعداد درخواستی مشتری کمتر از موجودی انبار باشد
+        # اگر تعداد درخواستی کمتر از موجودی انبار بود،
+        # مشخصات کالا را با فرمت مناسب برای دخیره در پیش فاکتور برمیگردانیم
         products_list = FileHandler().read()[market_name]['products']
         product = {}
         temp = {}
@@ -260,9 +263,13 @@ class Market:
         else:
             print('This product is not available')
 
-
     @staticmethod
     def shopping(market_name, costumer_phone, shopping_list):
+        # پس از نهایی کردن پیش فاکتور،
+        # ابتدا چک میکنیم که هنوز هم موجودی انبار جوابگوی تعداد کالای درخواستی مشتری است یا خیر
+        # اگر تعداد درخواستی مشتری در انبار موجود بود، تعداد کالا های انبار بروز رسانی میشود
+        # در صورتی که مشتری در لیست مشتری های فروشگاه نباشد،
+        # شماره تلفن او را به لیست مشتری ها اضافه میکنیم
         all_info = FileHandler().read()
         market = all_info[market_name]
 
@@ -297,8 +304,8 @@ class Market:
 
     @staticmethod
     def view_the_list_of_active_stores():
+        # در صورتی که زمان فعلی در بازه ی فعالیت فروشگاه باشد، اطلاعات آن فروشگاه را نمایش میدهیم
         all_markets_info = FileHandler().read()
-        # all_markets_list = all_markets_file.read_file()
         now = datetime.datetime.now()
         now = time(now.hour, now.minute, now.second)
         temp_store = []
@@ -328,6 +335,9 @@ class Market:
 
     @staticmethod
     def market_accurate_search(string, customer_username):
+        # زمانی که مشتری بخواهد از یک فروشگاه خرید نماید باید نام آن فروشگاه را وارد کند،
+        # نام وارد شده توسط مشتری باید در لیست نام فروشگاه ها موجود باشد
+        # و تطبیق کامل با نام فروشگاه داشته باشد
         all_markets_info = FileHandler().read()
         if string in all_markets_info.keys():
             if customer_username not in all_markets_info[string]['block_customers']:
@@ -343,9 +353,9 @@ class Market:
 
     @staticmethod
     def get_market_name(market_username):
+        # گرفتن شماره تلفن مدیر فروشگاه و برگرداندن نام فروشگاه
         all_markets_info = FileHandler().read()
         for item in all_markets_info.keys():
             if market_username == all_markets_info[item]['username']:
                 market_name = all_markets_info[item]['market_name']
                 return market_name
-
