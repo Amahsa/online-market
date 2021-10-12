@@ -349,7 +349,8 @@ class Market:
                 if all_markets_info[string]['start'] <= str(now) < all_markets_info[string]['end']:
                     return temp
                 else:
-                    print('tho market is closed')
+                    print('The market is closed')
+                    return
             else:
                 print('You are block :) ')
                 return False
