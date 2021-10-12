@@ -344,7 +344,12 @@ class Market:
                 temp = {'Market Name': all_markets_info[string]['market_name'],
                         'Start Working': all_markets_info[string]['start'],
                         'End Working': all_markets_info[string]['end']}
-                return temp
+                now = datetime.datetime.now()
+                now = time(now.hour, now.minute, now.second)
+                if all_markets_info[string]['start'] <= str(now) < all_markets_info[string]['end']:
+                    return temp
+                else:
+                    print('tho market is closed')
             else:
                 print('You are block :) ')
                 return False
